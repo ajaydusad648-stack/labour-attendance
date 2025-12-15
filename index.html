@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Labour Attendance Management</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 0; background:#f4f6f8; }
+    header { background:#1f2937; color:#fff; padding:15px; text-align:center; }
+    nav { background:#374151; padding:10px; display:flex; gap:15px; justify-content:center; }
+    nav a { color:#fff; text-decoration:none; font-size:14px; }
+    nav a:hover { text-decoration:underline; }
+    .container { padding:20px; }
+    .card { background:#fff; padding:15px; border-radius:6px; margin-bottom:15px; box-shadow:0 2px 4px rgba(0,0,0,0.1); }
+    .stats { display:grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap:15px; }
+    .stat { background:#e5e7eb; padding:15px; border-radius:6px; text-align:center; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { padding:10px; border:1px solid #ddd; text-align:center; }
+    th { background:#f3f4f6; }
+    button { padding:6px 12px; border:none; border-radius:4px; cursor:pointer; }
+    .present { background:#16a34a; color:#fff; }
+    .absent { background:#dc2626; color:#fff; }
+    .half { background:#f59e0b; color:#fff; }
+    footer { text-align:center; padding:10px; background:#1f2937; color:#fff; font-size:12px; }
+  </style>
+</head>
+<body>
+
+<header>
+  <h2>Labour Attendance Management System</h2>
+  <p>Project / Site Name</p>
+</header>
+
+<nav>
+  <a href="#dashboard">Dashboard</a>
+  <a href="#labour">Labour Details</a>
+  <a href="#attendance">Daily Attendance</a>
+  <a href="#history">Attendance History</a>
+</nav>
+
+<div class="container" id="dashboard">
+  <div class="card">
+    <h3>Dashboard</h3>
+    <div class="stats">
+      <div class="stat"><strong>Total Labourers</strong><br>25</div>
+      <div class="stat"><strong>Present</strong><br>20</div>
+      <div class="stat"><strong>Absent</strong><br>3</div>
+      <div class="stat"><strong>Half-Day</strong><br>2</div>
+    </div>
+  </div>
+</div>
+
+<div class="container" id="labour">
+  <div class="card">
+    <h3>Labour Details</h3>
+    <table>
+      <tr>
+        <th>ID</th><th>Name</th><th>Role</th><th>Mobile</th>
+      </tr>
+      <tr>
+        <td>001</td><td>Ramesh</td><td>Mason</td><td>9876543210</td>
+      </tr>
+      <tr>
+        <td>002</td><td>Suresh</td><td>Helper</td><td>9123456780</td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<div class="container" id="attendance">
+  <div class="card">
+    <h3>Daily Attendance</h3>
+    <input type="date" id="attendanceDate" />
+    <table>
+      <tr>
+        <th>ID</th><th>Name</th><th>Status</th>
+      </tr>
+      <tr>
+        <td>001</td><td>Ramesh</td>
+        <td>
+          <button class="present" onclick="markAttendance('Ramesh','Present')">Present</button>
+          <button class="absent" onclick="markAttendance('Ramesh','Absent')">Absent</button>
+          <button class="half" onclick="markAttendance('Ramesh','Half-Day')">Half</button>
+        </td>
+      </tr>
+      <tr>
+        <td>002</td><td>Suresh</td>
+        <td>
+          <button class="present" onclick="markAttendance('Suresh','Present')">Present</button>
+          <button class="absent" onclick="markAttendance('Suresh','Absent')">Absent</button>
+          <button class="half" onclick="markAttendance('Suresh','Half-Day')">Half</button>
+        </td>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<div class="container" id="history">
+  <div class="card">
+    <h3>Attendance History</h3>
+    <table id="historyTable">
+      <tr>
+        <th>Date</th><th>Name</th><th>Status</th><th>Edit</th>
+      </tr>
+    </table>
+  </div>
+</div>
+
+<footer>
+  © 2025 Labour Attendance System
+</footer>
+
+<script>
+// ===== Data Store =====
+let attendanceData = [];
+
+// ===== Mark Attendance =====
+function markAttendance(name, status) {
+  const dateInput = document.getElementById('attendanceDate');
+  const date = dateInput.value || new Date().toISOString().split('T')[0];
+
+  const index = attendanceData.findIndex(a => a.date === date && a.name === name);
+  if (index !== -1) {
+    attendanceData[index].status = status;
+  } else {
+    attendanceData.push({ date, name, status });
+  }
+
+  renderHistory();
+  alert(name + ' marked ' + status + ' on ' + date);
+}
+
+// ===== Render History =====
+function renderHistory() {
+  const table = document.getElementById('historyTable');
+  table.innerHTML = '<tr><th>Date</th><th>Name</th><th>Status</th><th>Edit</th></tr>';
+
+  attendanceData.forEach((a, i) => {
+    const row = table.insertRow();
+    row.innerHTML = `<td>${a.date}</td><td>${a.name}</td><td>${a.status}</td>
+    <td><button onclick="editAttendance(${i})">Edit</button></td>`;
+  });
+}
+
+// ===== Edit Attendance =====
+function editAttendance(index) {
+  const newStatus = prompt('Enter status: Present / Absent / Half-Day', attendanceData[index].status);
+  if (['Present','Absent','Half-Day'].includes(newStatus)) {
+    attendanceData[index].status = newStatus;
+    renderHistory();
+  } else if (newStatus !== null) {
+    alert('Invalid status');
+  }
+}
+
+// ===== Wage Calculation =====
+function calculateWages(dailyWage = 500) {
+  let total = 0;
+  attendanceData.forEach(a => {
+    if (a.status === 'Present') total += dailyWage;
+    if (a.status === 'Half-Day') total += dailyWage / 2;
+  });
+  alert('Total Wage: ₹' + total);
+}
+
+// ===== Export PDF (text demo) =====
+function exportPDF() {
+  let content = `Date | Name | Status\n`;
+  attendanceData.forEach(a => {
+    content += `${a.date} | ${a.name} | ${a.status}\n`;
+  });
+  const blob = new Blob([content], { type: 'application/pdf' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'attendance.pdf';
+  link.click();
+}
+</script>
+
+<div style="padding:20px;text-align:center;">
+  <button onclick="calculateWages()">Calculate Wages</button>
+  <button onclick="exportPDF()">Export PDF</button>
+</div>
+
+</body>
+</html>
